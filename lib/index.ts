@@ -23,6 +23,19 @@ class DecodeError extends Error {
 }
 
 /**
+ * Decodes a boolean JSONValue into a boolean.
+ */
+export const Boolean: Decoder<boolean> = {
+    decode(json: JSONValue): boolean {
+        if (typeof json === 'boolean') {
+            return json;
+        }
+
+        throw new DecodeError('boolean', json);
+    },
+};
+
+/**
  * Decodes a string JSONValue into a string.
  */
 export const String: Decoder<string> = {

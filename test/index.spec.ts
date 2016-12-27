@@ -20,6 +20,22 @@ const TEST_CASES = [
     },
 ];
 
+describe('decoder.Boolean', () => {
+    it('should correctly decode a boolean-valued JSON argument', () => {
+        [true, false].forEach((bool: any) => {
+            const result: boolean = decoder.Boolean.decode(bool);
+
+            expect(result).to.be.equal(bool as boolean);
+        });
+    });
+
+    TEST_CASES.filter(testCase => testCase.type !== 'boolean').forEach(testCase => {
+        it(`should error when given a ${testCase.type}`, () => {
+            expect(() => decoder.Boolean.decode(testCase.value)).to.throw(Error);
+        });
+    });
+});
+
 describe('decoder.String', () => {
     it('should correctly decode a string-valued JSON argument', () => {
         const json: any = 'a valid string';
