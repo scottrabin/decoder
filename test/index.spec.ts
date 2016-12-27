@@ -36,6 +36,22 @@ describe('decoder.Boolean', () => {
     });
 });
 
+describe('decoder.Number', () => {
+    it('should correctly decode a number-valued JSON argument', () => {
+        [1, 30, 19837].forEach((num: any) => {
+            const result: number = decoder.Number.decode(num);
+
+            expect(result).to.be.equal(num as number);
+        });
+    });
+
+    TEST_CASES.filter(testCase => testCase.type !== 'number').forEach(testCase => {
+        it(`should error when given a ${testCase.type}`, () => {
+            expect(() => decoder.Number.decode(testCase.value)).to.throw(Error);
+        });
+    });
+});
+
 describe('decoder.String', () => {
     it('should correctly decode a string-valued JSON argument', () => {
         const json: any = 'a valid string';

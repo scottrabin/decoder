@@ -36,6 +36,19 @@ export const Boolean: Decoder<boolean> = {
 };
 
 /**
+ * Decodes a number JSONValue into a number.
+ */
+export const Number: Decoder<number> = {
+    decode(json: JSONValue): number {
+        if (typeof json === 'number') {
+            return json;
+        }
+
+        throw new DecodeError('number', json);
+    },
+};
+
+/**
  * Decodes a string JSONValue into a string.
  */
 export const String: Decoder<string> = {
