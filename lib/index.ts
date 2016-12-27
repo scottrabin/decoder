@@ -1,4 +1,4 @@
-import { GlobalArray, isArray } from './unshadow';
+import { GlobalArray, isArray, objectKeys } from './unshadow';
 
 /**
  * Define the different types represented in JSON
@@ -13,6 +13,13 @@ interface JSONArray extends GlobalArray<JSONValue> { }
 
 export interface Decoder<T> {
     decode(json: any): T;
+}
+
+/**
+ * Determines if the given parameter is a JSONObject
+ */
+function isObject(param: any): param is JSONObject {
+    return (param !== null && typeof param === 'object' && !isArray(param));
 }
 
 /**
@@ -74,6 +81,25 @@ export function Array<T>(elementDecoder: Decoder<T>): Decoder<Array<T>> {
             }
 
             throw new DecodeError('array', json);
+        },
+    };
+};
+
+/**
+ * Decodes an arbitrary object, using the decoder map to determine the value at
+ * each key.
+ */
+export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decoder<T> {
+    return {
+        decode(json: JSONValue): T {
+            if (isObject(json)) {
+                return objectKeys(decoderMap).reduce((result: any, key: keyof T): any => {
+                    result[key] = decoderMap[key].decode(json[key]);
+                    return result;
+                }, {}) as T;
+            }
+
+            throw new DecodeError('object', json);
         },
     };
 };

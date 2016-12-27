@@ -3,12 +3,16 @@ import * as decoder from '../lib/index';
 
 const TEST_CASES = [
     {
+        type: 'boolean',
+        value: true,
+    },
+    {
         type: 'number',
         value: 12345,
     },
     {
-        type: 'boolean',
-        value: true,
+        type: 'string',
+        value: 'this is an example string',
     },
     {
         type: 'array',
@@ -86,6 +90,40 @@ describe('decoder.Array', () => {
     TEST_CASES.filter(testCase => testCase.type !== 'array').forEach(testCase => {
         it(`should error when given a ${testCase.type}`, () => {
             expect(() => decoder.Array(decoder.String).decode(testCase.value)).to.throw(Error);
+        });
+    });
+});
+
+describe('decoder.Object', () => {
+    it('should correctly decode a shaped object', () => {
+        const json: any = {
+            some: 'value',
+            has: 123,
+        };
+
+        const result = decoder.Object({
+            some: decoder.String,
+            has: decoder.Number,
+        }).decode(json);
+
+        expect(result).to.deep.equal(json);
+    });
+
+    it('should throw an error if a value can\'t be correctly decoded', () => {
+        const json: any = {
+            wrong: 'type',
+        };
+
+        const objDecoder = decoder.Object({
+            wrong: decoder.Number,
+        });
+
+        expect(() => objDecoder.decode(json)).to.throw(Error);
+    });
+
+    TEST_CASES.filter(testCase => testCase.type !== 'object').forEach(testCase => {
+        it(`should error when given a ${testCase.type}`, () => {
+            expect(() => decoder.Object({}).decode(testCase.value)).to.throw(Error);
         });
     });
 });
