@@ -1,0 +1,8 @@
+{
+  "name": "decoder-ring",
+  "version": "0.0.1",
+  "description": "Decode JSON into application types",
+  "main": "index.js",
+  "author": "Scott Rabin <scottrabin@gmail.com>",
+  "license": "MIT"
+}
