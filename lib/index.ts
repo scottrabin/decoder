@@ -121,3 +121,19 @@ export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }
         },
     };
 };
+
+/**
+ * Decodes a value that may be missing or null; otherwise, attempts to decode
+ * the value.
+ */
+export function Maybe<T>(decoder: Decoder<T>): Decoder<null | T> {
+    return {
+        decode(json: JSONValue): null | T {
+            if (json) {
+                return decoder.decode(json);
+            }
+
+            return null;
+        },
+    };
+};

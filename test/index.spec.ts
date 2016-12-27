@@ -158,3 +158,24 @@ describe('decoder.Dictionary', () => {
         });
     });
 });
+
+describe('decoder.Maybe', () => {
+    it('should return `null` when given `null` or an undefined value', () => {
+        expect(decoder.Maybe(decoder.String).decode(null)).to.equal(null);
+        expect(decoder.Maybe(decoder.Number).decode(void 0)).to.equal(null);
+    });
+
+    it('should return the decoded value if present', () => {
+        const json: any = 3;
+
+        expect(decoder.Maybe(decoder.Number).decode(json)).to.equal(json);
+    });
+
+    it('should not suppress decode errors for contained values', () => {
+        const json: any = 'not a number';
+
+        const maybeNumberDecoder = decoder.Maybe(decoder.Number);
+
+        expect(() => maybeNumberDecoder.decode(json)).to.throw(Error);
+    });
+});
