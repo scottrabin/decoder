@@ -127,3 +127,34 @@ describe('decoder.Object', () => {
         });
     });
 });
+
+describe('decoder.Dictionary', () => {
+    it('should correctly decode a dictionary', () => {
+        const json: any = {
+            "one": 1,
+            "two": 2,
+            "four": 4,
+        };
+
+        const result = decoder.Dictionary(decoder.Number).decode(json);
+
+        expect(result).to.deep.equal(json);
+    });
+
+    it('should throw an error if a value can\'t be correctly decoded', () => {
+        const json: any = {
+            "one": 1,
+            "two": "two",
+        };
+
+        const dictDecoder = decoder.Dictionary(decoder.Number);
+
+        expect(() => dictDecoder.decode(json)).to.throw(Error);
+    });
+
+    TEST_CASES.filter(testCase => testCase.type !== 'object').forEach(testCase => {
+        it(`should error when given a ${testCase.type}`, () => {
+            expect(() => decoder.Object({}).decode(testCase.value)).to.throw(Error);
+        });
+    });
+});

@@ -103,3 +103,21 @@ export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decode
         },
     };
 };
+
+/**
+ * Decodes a dictionary with arbitrary key mappings to consistent values.
+ */
+export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }> {
+    return {
+        decode(json: JSONValue): { [key: string]: T } {
+            if (isObject(json)) {
+                return objectKeys(json).reduce((dict: { [key: string]: T }, key: string) => {
+                    dict[key] = decoder.decode(json[key]);
+                    return dict;
+                }, {});
+            }
+
+            throw new DecodeError('object', json);
+        },
+    };
+};
