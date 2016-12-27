@@ -4,5 +4,12 @@
   "description": "Decode JSON into application types",
   "main": "index.js",
   "author": "Scott Rabin <scottrabin@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo 'failure' &>1 && exit 1"
+  },
+  "dependencies": {
+    "typescript": "^2.1.4"
+  }
 }
