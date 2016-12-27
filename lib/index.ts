@@ -137,3 +137,22 @@ export function Maybe<T>(decoder: Decoder<T>): Decoder<null | T> {
         },
     };
 };
+
+/**
+ * Decode a value nested inside multiple levels of objects.
+ */
+export function At<T>(path: string[], decoder: Decoder<T>): Decoder<T> {
+    return {
+        decode(json: JSONValue): T {
+            const traverseResult: JSONValue = path.reduce((current, key) => {
+                if (isObject(current) && (key in current)) {
+                    return current[key];
+                }
+
+                throw new DecodeError(`value at ${path.join('.')}`, json);
+            }, json);
+
+            return decoder.decode(traverseResult);
+        },
+    };
+};

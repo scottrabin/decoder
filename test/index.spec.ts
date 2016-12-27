@@ -179,3 +179,29 @@ describe('decoder.Maybe', () => {
         expect(() => maybeNumberDecoder.decode(json)).to.throw(Error);
     });
 });
+
+describe('decoder.At', () => {
+    const json: any = {
+        levelOne: {
+            levelTwo: 3,
+        },
+    };
+
+    it('should return the decoded value at the nested path', () => {
+        const atDecoder = decoder.At(['levelOne', 'levelTwo'], decoder.Number);
+
+        expect(atDecoder.decode(json)).to.equal(json.levelOne.levelTwo);
+    });
+
+    it('should throw an error if the path does not exist', () => {
+        const atDecoder = decoder.At(['levelOne', 'levelThree'], decoder.Number);
+
+        expect(() => atDecoder.decode(json)).to.throw(Error);
+    });
+
+    it('should not suppress decode errors for contained values', () => {
+        const atDecoder = decoder.At(['levelOne', 'levelTwo'], decoder.String);
+
+        expect(() => atDecoder.decode(json)).to.throw(Error);
+    });
+});
