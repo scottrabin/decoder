@@ -205,3 +205,51 @@ describe('decoder.At', () => {
         expect(() => atDecoder.decode(json)).to.throw(Error);
     });
 });
+
+describe('decoder.OneOf', () => {
+    it('should return the first type if it matches', () => {
+        const json: any = 1;
+        const oneOfDecoder = decoder.OneOf2(decoder.Number, decoder.String);
+
+        expect(oneOfDecoder.decode(json)).to.equal(json);
+    });
+
+    it('should return the second type if it matches', () => {
+        const json: any = 'one';
+        const oneOfDecoder = decoder.OneOf2(decoder.Number, decoder.String);
+
+        expect(oneOfDecoder.decode(json)).to.equal(json);
+    });
+
+    it('should return the first type that matches', () => {
+        const json: any = {
+            one: 1,
+            two: 2,
+        };
+
+        const multiDecoder = decoder.OneOf2(
+            decoder.Object({
+                one: decoder.Number,
+            }),
+            decoder.Object({
+                two: decoder.Number,
+            })
+        );
+
+        expect(multiDecoder.decode(json)).to.deep.equal({ one: 1 });
+    });
+
+    it('should throw an error if none of the decoders apply', () => {
+        const json: any = true;
+        const oneOfDecoder = decoder.OneOf2(decoder.Number, decoder.String);
+
+        expect(() => oneOfDecoder.decode(json)).to.throw(Error);
+    });
+
+    it('should be able to match against multiple decoders', () => {
+        const json: any = true;
+        const oneOfDecoder = decoder.OneOf3(decoder.Number, decoder.String, decoder.Boolean);
+
+        expect(oneOfDecoder.decode(json)).to.equal(json);
+    });
+});
