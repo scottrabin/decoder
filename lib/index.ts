@@ -1,3 +1,5 @@
+import { GlobalArray, isArray } from './unshadow';
+
 /**
  * Define the different types represented in JSON
  */
@@ -7,10 +9,10 @@ interface JSONObject {
     [x: string]: JSONValue;
 }
 
-interface JSONArray extends Array<JSONValue> { }
+interface JSONArray extends GlobalArray<JSONValue> { }
 
 export interface Decoder<T> {
-    decode(json: JSONValue): T;
+    decode(json: any): T;
 }
 
 /**
@@ -59,4 +61,19 @@ export const String: Decoder<string> = {
 
         throw new DecodeError('string', json);
     },
+};
+
+/**
+ * Decodes an array JSONValue into an array of decoded types.
+ */
+export function Array<T>(elementDecoder: Decoder<T>): Decoder<Array<T>> {
+    return {
+        decode(json: JSONValue): Array<T> {
+            if (isArray(json)) {
+                return json.map(elementDecoder.decode, elementDecoder);
+            }
+
+            throw new DecodeError('array', json);
+        },
+    };
 };

@@ -67,3 +67,25 @@ describe('decoder.String', () => {
         });
     });
 });
+
+describe('decoder.Array', () => {
+    it('should correctly decode a array-valued JSON argument', () => {
+        const json: any = ['one', 'two', 'three'];
+
+        const result: Array<string> = decoder.Array(decoder.String).decode(json);
+
+        expect(result).to.be.deep.equal(['one', 'two', 'three']);
+    });
+
+    it('should throw an error if an element is not decodeable with the given decoder', () => {
+        const json: any = [1, 'two', 3];
+
+        expect(() => decoder.Array(decoder.Number).decode(json)).to.throw(Error);
+    });
+
+    TEST_CASES.filter(testCase => testCase.type !== 'array').forEach(testCase => {
+        it(`should error when given a ${testCase.type}`, () => {
+            expect(() => decoder.Array(decoder.String).decode(testCase.value)).to.throw(Error);
+        });
+    });
+});
