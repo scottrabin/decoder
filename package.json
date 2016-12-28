@@ -2,7 +2,8 @@
   "name": "decoder-ring",
   "version": "0.0.1",
   "description": "Decode JSON into application types",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "author": "Scott Rabin <scottrabin@gmail.com>",
   "license": "MIT",
   "scripts": {
