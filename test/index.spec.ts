@@ -128,6 +128,22 @@ describe('decoder.Object', () => {
     });
 });
 
+describe('decoder.Map', () => {
+    it('should apply the given function to the decoded result of the provided value', () => {
+        const json: any = 8;
+        const mapDecoder = decoder.Map(n => n.toString(), decoder.Number);
+
+        expect(mapDecoder.decode(json)).to.equal('8');
+    });
+
+    it('should not suppress errors from the contained decoder', () => {
+        const json: any = 12345;
+        const mapDecoder = decoder.Map(v => parseInt(v, 10), decoder.String);
+
+        expect(() => mapDecoder.decode(json)).to.throw(Error);
+    });
+});
+
 describe('decoder.Dictionary', () => {
     it('should correctly decode a dictionary', () => {
         const json: any = {

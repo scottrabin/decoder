@@ -105,6 +105,18 @@ export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decode
 };
 
 /**
+ * Maps an arbitrarily-valued, verified type into a different type as a part
+ * of the decode process.
+ */
+export function Map<T, TRaw>(mapper: (raw: TRaw) => T, decoder: Decoder<TRaw>): Decoder<T> {
+    return {
+        decode(json: JSONValue): T {
+            return mapper(decoder.decode(json));
+        },
+    };
+}
+
+/**
  * Decodes a dictionary with arbitrary key mappings to consistent values.
  */
 export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }> {
