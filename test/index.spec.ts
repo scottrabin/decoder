@@ -196,6 +196,29 @@ describe('decoder.Maybe', () => {
     });
 });
 
+describe('decoder.Default', () => {
+    it('should return the provided default value if the given value is `null`', () => {
+        const json: any = null;
+        const defaultDecoder = decoder.Default(decoder.Number, 234);
+
+        expect(defaultDecoder.decode(json)).to.equal(234);
+    });
+
+    it('should return the provided default value if the given value is `undefined`', () => {
+        const json: any = void 0;
+        const defaultDecoder = decoder.Default(decoder.Boolean, true);
+
+        expect(defaultDecoder.decode(json)).to.equal(true);
+    })
+
+    it('should return the decoded value if the given argument is non-null', () => {
+        const json: any = 'a string';
+        const defaultDecoder = decoder.Default(decoder.String, 'default value');
+
+        expect(defaultDecoder.decode(json)).to.equal('a string');
+    });
+});
+
 describe('decoder.At', () => {
     const json: any = {
         levelOne: {

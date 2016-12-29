@@ -151,6 +151,24 @@ export function Maybe<T>(decoder: Decoder<T>): Decoder<null | T> {
 };
 
 /**
+ * Attempts to decode the given JSON if it is non-null; otherwise, yields the
+ * provided default value.
+ */
+export function Default<T>(decoder: Decoder<T>, defaultValue: T): Decoder<T> {
+    return {
+        decode(json: JSONValue): T {
+            switch (json) {
+            case null:
+            case void 0:
+                return defaultValue;
+            default:
+                return decoder.decode(json);
+            }
+        },
+    };
+}
+
+/**
  * Decode a value nested inside multiple levels of objects.
  */
 export function At<T>(path: string[], decoder: Decoder<T>): Decoder<T> {
