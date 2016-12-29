@@ -1,4 +1,4 @@
-import { GlobalArray, isArray, objectKeys } from './unshadow';
+import { GlobalArray, isArray, objectKeys } from "./unshadow";
 
 /**
  * Define the different types represented in JSON
@@ -19,7 +19,7 @@ export interface Decoder<T> {
  * Determines if the given parameter is a JSONObject
  */
 function isObject(param: any): param is JSONObject {
-    return (param !== null && typeof param === 'object' && !isArray(param));
+    return (param !== null && typeof param === "object" && !isArray(param));
 }
 
 /**
@@ -34,39 +34,42 @@ class DecodeError extends Error {
 /**
  * Decodes a boolean JSONValue into a boolean.
  */
+// tslint:disable-next-line:variable-name
 export const Boolean: Decoder<boolean> = {
     decode(json: JSONValue): boolean {
-        if (typeof json === 'boolean') {
+        if (typeof json === "boolean") {
             return json;
         }
 
-        throw new DecodeError('boolean', json);
+        throw new DecodeError("boolean", json);
     },
 };
 
 /**
  * Decodes a number JSONValue into a number.
  */
+// tslint:disable-next-line:variable-name
 export const Number: Decoder<number> = {
     decode(json: JSONValue): number {
-        if (typeof json === 'number') {
+        if (typeof json === "number") {
             return json;
         }
 
-        throw new DecodeError('number', json);
+        throw new DecodeError("number", json);
     },
 };
 
 /**
  * Decodes a string JSONValue into a string.
  */
+// tslint:disable-next-line:variable-name
 export const String: Decoder<string> = {
     decode(json: JSONValue): string {
-        if (typeof json === 'string') {
+        if (typeof json === "string") {
             return json;
         }
 
-        throw new DecodeError('string', json);
+        throw new DecodeError("string", json);
     },
 };
 
@@ -80,10 +83,10 @@ export function Array<T>(elementDecoder: Decoder<T>): Decoder<Array<T>> {
                 return json.map(elementDecoder.decode, elementDecoder);
             }
 
-            throw new DecodeError('array', json);
+            throw new DecodeError("array", json);
         },
     };
-};
+}
 
 /**
  * Decodes an arbitrary object, using the decoder map to determine the value at
@@ -99,10 +102,10 @@ export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decode
                 }, {}) as T;
             }
 
-            throw new DecodeError('object', json);
+            throw new DecodeError("object", json);
         },
     };
-};
+}
 
 /**
  * Maps an arbitrarily-valued, verified type into a different type as a part
@@ -129,10 +132,10 @@ export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }
                 }, {});
             }
 
-            throw new DecodeError('object', json);
+            throw new DecodeError("object", json);
         },
     };
-};
+}
 
 /**
  * Decodes a value that may be missing or null; otherwise, attempts to decode
@@ -141,14 +144,14 @@ export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }
 export function Maybe<T>(decoder: Decoder<T>): Decoder<null | T> {
     return {
         decode(json: JSONValue): null | T {
-            if (json) {
-                return decoder.decode(json);
+            if (json === null || json === void 0) {
+                return null;
             }
 
-            return null;
+            return decoder.decode(json);
         },
     };
-};
+}
 
 /**
  * Attempts to decode the given JSON if it is non-null; otherwise, yields the
@@ -179,13 +182,13 @@ export function At<T>(path: string[], decoder: Decoder<T>): Decoder<T> {
                     return current[key];
                 }
 
-                throw new DecodeError(`value at ${path.join('.')}`, json);
+                throw new DecodeError(`value at ${path.join(".")}`, json);
             }, json);
 
             return decoder.decode(traverseResult);
         },
     };
-};
+}
 
 /**
  * Decode a value that may match any one of the given decoders.
@@ -202,7 +205,7 @@ export function OneOf2<T1, T2>(d1: Decoder<T1>, d2: Decoder<T2>): Decoder<T1 | T
             }
         },
     };
-};
+}
 
 export function OneOf3<T1, T2, T3>(d1: Decoder<T1>, d2: Decoder<T2>, d3: Decoder<T3>): Decoder<T1 | T2 | T3> {
     return {
@@ -214,4 +217,4 @@ export function OneOf3<T1, T2, T3>(d1: Decoder<T1>, d2: Decoder<T2>, d3: Decoder
             }
         },
     };
-};
+}
