@@ -37,11 +37,11 @@ class DecodeError extends Error {
 // tslint:disable-next-line:variable-name
 export const Boolean: Decoder<boolean> = {
     decode(json: JSONValue): boolean {
-        if (typeof json === "boolean") {
-            return json;
+        if (typeof json !== "boolean") {
+            throw new DecodeError("boolean", json);
         }
 
-        throw new DecodeError("boolean", json);
+        return json;
     },
 };
 
@@ -51,11 +51,11 @@ export const Boolean: Decoder<boolean> = {
 // tslint:disable-next-line:variable-name
 export const Number: Decoder<number> = {
     decode(json: JSONValue): number {
-        if (typeof json === "number") {
-            return json;
+        if (typeof json !== "number") {
+            throw new DecodeError("number", json);
         }
 
-        throw new DecodeError("number", json);
+        return json;
     },
 };
 
@@ -65,11 +65,11 @@ export const Number: Decoder<number> = {
 // tslint:disable-next-line:variable-name
 export const String: Decoder<string> = {
     decode(json: JSONValue): string {
-        if (typeof json === "string") {
-            return json;
+        if (typeof json !== "string") {
+            throw new DecodeError("string", json);
         }
 
-        throw new DecodeError("string", json);
+        return json;
     },
 };
 
@@ -79,11 +79,11 @@ export const String: Decoder<string> = {
 export function Array<T>(elementDecoder: Decoder<T>): Decoder<Array<T>> {
     return {
         decode(json: JSONValue): Array<T> {
-            if (isArray(json)) {
-                return json.map(elementDecoder.decode, elementDecoder);
+            if (!isArray(json)) {
+                throw new DecodeError("array", json);
             }
 
-            throw new DecodeError("array", json);
+            return json.map(elementDecoder.decode, elementDecoder);
         },
     };
 }
@@ -95,14 +95,14 @@ export function Array<T>(elementDecoder: Decoder<T>): Decoder<Array<T>> {
 export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decoder<T> {
     return {
         decode(json: JSONValue): T {
-            if (isObject(json)) {
-                return objectKeys(decoderMap).reduce((result: any, key: keyof T): any => {
-                    result[key] = decoderMap[key].decode(json[key]);
-                    return result;
-                }, {}) as T;
+            if (!isObject(json)) {
+                throw new DecodeError("object", json);
             }
 
-            throw new DecodeError("object", json);
+            return objectKeys(decoderMap).reduce((result: any, key: keyof T): any => {
+                result[key] = decoderMap[key].decode(json[key]);
+                return result;
+            }, {});
         },
     };
 }
@@ -125,14 +125,14 @@ export function Map<T, TRaw>(mapper: (raw: TRaw) => T, decoder: Decoder<TRaw>): 
 export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }> {
     return {
         decode(json: JSONValue): { [key: string]: T } {
-            if (isObject(json)) {
-                return objectKeys(json).reduce((dict: { [key: string]: T }, key: string) => {
-                    dict[key] = decoder.decode(json[key]);
-                    return dict;
-                }, {});
+            if (!isObject(json)) {
+                throw new DecodeError("object", json);
             }
 
-            throw new DecodeError("object", json);
+            return objectKeys(json).reduce((dict: { [key: string]: T }, key: string) => {
+                dict[key] = decoder.decode(json[key]);
+                return dict;
+            }, {});
         },
     };
 }
@@ -144,11 +144,13 @@ export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }
 export function Maybe<T>(decoder: Decoder<T>): Decoder<null | T> {
     return {
         decode(json: JSONValue): null | T {
-            if (json === null || json === void 0) {
+            switch (json) {
+            case null:
+            case void 0:
                 return null;
+            default:
+                return decoder.decode(json);
             }
-
-            return decoder.decode(json);
         },
     };
 }
