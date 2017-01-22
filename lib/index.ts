@@ -1,34 +1,19 @@
-import { GlobalArray, isArray, objectKeys } from "./unshadow";
-
-/**
- * Define the different types represented in JSON
- */
-type JSONValue = null | string | number | boolean | JSONObject | JSONArray;
-
-interface JSONObject {
-    [x: string]: JSONValue;
-}
-
-interface JSONArray extends GlobalArray<JSONValue> { }
-
-export interface Decoder<T> {
-    decode(json: any): T;
-}
+import {
+    isArray,
+    objectKeys,
+} from "./unshadow";
+import {
+    JSONValue,
+    JSONObject,
+} from "./json";
+import { Decoder } from "./interface";
+import { DecodeError } from "./decode-error";
 
 /**
  * Determines if the given parameter is a JSONObject
  */
 function isObject(param: any): param is JSONObject {
     return (param !== null && typeof param === "object" && !isArray(param));
-}
-
-/**
- * Error type thrown when the decode operation fails.
- */
-class DecodeError extends Error {
-    constructor(expected: string, actual: JSONValue) {
-        super(`Decode error: expected ${expected}, got ${JSON.stringify(actual)}`);
-    }
 }
 
 /**
