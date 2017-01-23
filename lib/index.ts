@@ -6,8 +6,14 @@ import {
     JSONValue,
     JSONObject,
 } from "./json";
-import { Decoder } from "./interface";
-import { DecodeError } from "./decode-error";
+import {
+    Decoder,
+    DecodeResult,
+} from "./interface";
+import {
+    DecodeError,
+    isDecodeError,
+} from "./decode-error";
 
 /**
  * Determines if the given parameter is a JSONObject
@@ -21,9 +27,9 @@ function isObject(param: any): param is JSONObject {
  */
 // tslint:disable-next-line:variable-name
 export const Boolean: Decoder<boolean> = {
-    decode(json: JSONValue): boolean {
+    decode(json: JSONValue): DecodeResult<boolean> {
         if (typeof json !== "boolean") {
-            throw new DecodeError("boolean", json);
+            return new DecodeError("boolean", json);
         }
 
         return json;
@@ -35,9 +41,9 @@ export const Boolean: Decoder<boolean> = {
  */
 // tslint:disable-next-line:variable-name
 export const Number: Decoder<number> = {
-    decode(json: JSONValue): number {
+    decode(json: JSONValue): DecodeResult<number> {
         if (typeof json !== "number") {
-            throw new DecodeError("number", json);
+            return new DecodeError("number", json);
         }
 
         return json;
@@ -49,9 +55,9 @@ export const Number: Decoder<number> = {
  */
 // tslint:disable-next-line:variable-name
 export const String: Decoder<string> = {
-    decode(json: JSONValue): string {
+    decode(json: JSONValue): DecodeResult<string> {
         if (typeof json !== "string") {
-            throw new DecodeError("string", json);
+            return new DecodeError("string", json);
         }
 
         return json;
@@ -63,12 +69,22 @@ export const String: Decoder<string> = {
  */
 export function Array<T>(elementDecoder: Decoder<T>): Decoder<Array<T>> {
     return {
-        decode(json: JSONValue): Array<T> {
+        decode(json: JSONValue): DecodeResult<Array<T>> {
             if (!isArray(json)) {
-                throw new DecodeError("array", json);
+                return new DecodeError("array", json);
             }
 
-            return json.map(elementDecoder.decode, elementDecoder);
+            const resultList: Array<T> = [];
+            for (let i = 0; i < json.length; i++) {
+                const result: DecodeResult<T> = elementDecoder.decode(json[i]);
+                if (isDecodeError(result)) {
+                    return result;
+                } else {
+                    resultList[i] = result;
+                }
+            }
+
+            return resultList;
         },
     };
 }
@@ -79,15 +95,25 @@ export function Array<T>(elementDecoder: Decoder<T>): Decoder<Array<T>> {
  */
 export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decoder<T> {
     return {
-        decode(json: JSONValue): T {
+        decode(json: JSONValue): DecodeResult<T> {
             if (!isObject(json)) {
-                throw new DecodeError("object", json);
+                return new DecodeError("object", json);
             }
 
-            return objectKeys(decoderMap).reduce((result: any, key: keyof T): any => {
-                result[key] = decoderMap[key].decode(json[key]);
-                return result;
-            }, {});
+            // TODO empty object is not assignable to Partial<T>
+            // https://github.com/Microsoft/TypeScript/issues/12731
+            const result: Partial<T> = {} as Partial<T>;
+            const keys: (keyof T)[] = objectKeys(decoderMap) as (keyof T)[];
+            for (let key of keys) {
+                const vResult = decoderMap[key].decode(json[key]);
+                if (isDecodeError(vResult)) {
+                    return vResult;
+                } else {
+                    result[key] = vResult;
+                }
+            }
+
+            return result as T;
         },
     };
 }
@@ -98,8 +124,13 @@ export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decode
  */
 export function Map<T, TRaw>(mapper: (raw: TRaw) => T, decoder: Decoder<TRaw>): Decoder<T> {
     return {
-        decode(json: JSONValue): T {
-            return mapper(decoder.decode(json));
+        decode(json: JSONValue): DecodeResult<T> {
+            const innerResult: DecodeResult<TRaw> = decoder.decode(json);
+            if (isDecodeError(innerResult)) {
+                return innerResult;
+            } else {
+                return mapper(innerResult);
+            }
         },
     };
 }
@@ -109,15 +140,21 @@ export function Map<T, TRaw>(mapper: (raw: TRaw) => T, decoder: Decoder<TRaw>): 
  */
 export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }> {
     return {
-        decode(json: JSONValue): { [key: string]: T } {
+        decode(json: JSONValue): DecodeResult<{ [key: string]: T }> {
             if (!isObject(json)) {
-                throw new DecodeError("object", json);
+                return new DecodeError("object", json);
             }
 
-            return objectKeys(json).reduce((dict: { [key: string]: T }, key: string) => {
-                dict[key] = decoder.decode(json[key]);
-                return dict;
-            }, {});
+            const dict: { [key: string]: T } = {};
+            for (let key of objectKeys(json)) {
+                const vResult = decoder.decode(json[key]);
+                if (isDecodeError(vResult)) {
+                    return vResult;
+                } else {
+                    dict[key] = vResult;
+                }
+            }
+            return dict;
         },
     };
 }
@@ -128,7 +165,7 @@ export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }
  */
 export function Maybe<T>(decoder: Decoder<T>): Decoder<null | T> {
     return {
-        decode(json: JSONValue): null | T {
+        decode(json: JSONValue): DecodeResult<null | T> {
             switch (json) {
             case null:
             case void 0:
@@ -146,7 +183,7 @@ export function Maybe<T>(decoder: Decoder<T>): Decoder<null | T> {
  */
 export function Default<T>(decoder: Decoder<T>, defaultValue: T): Decoder<T> {
     return {
-        decode(json: JSONValue): T {
+        decode(json: JSONValue): DecodeResult<T> {
             switch (json) {
             case null:
             case void 0:
@@ -163,14 +200,15 @@ export function Default<T>(decoder: Decoder<T>, defaultValue: T): Decoder<T> {
  */
 export function At<T>(path: string[], decoder: Decoder<T>): Decoder<T> {
     return {
-        decode(json: JSONValue): T {
-            const traverseResult: JSONValue = path.reduce((current, key) => {
-                if (isObject(current) && (key in current)) {
-                    return current[key];
+        decode(json: JSONValue): DecodeResult<T> {
+            let traverseResult: JSONValue = json;
+            for (let pathKey of path) {
+                if (isObject(traverseResult) && (pathKey in traverseResult)) {
+                    traverseResult = traverseResult[pathKey];
+                } else {
+                    return new DecodeError(`value at ${path.join(".")}`, json);
                 }
-
-                throw new DecodeError(`value at ${path.join(".")}`, json);
-            }, json);
+            }
 
             return decoder.decode(traverseResult);
         },
@@ -182,25 +220,26 @@ export function At<T>(path: string[], decoder: Decoder<T>): Decoder<T> {
  */
 export function OneOf2<T1, T2>(d1: Decoder<T1>, d2: Decoder<T2>): Decoder<T1 | T2> {
     return {
-        decode(json: JSONValue): T1 | T2 {
-            try {
-                return d1.decode(json);
-            } catch (e) {
-                // TODO the error messages for this will not reflect the composed
-                // nature of the decoder; the notion of "One Of" will be lost.
-                return d2.decode(json);
+        decode(json: JSONValue): DecodeResult<T1 | T2> {
+            let result: DecodeResult<T1 | T2> = d1.decode(json);
+            if (isDecodeError(result)) {
+                result = d2.decode(json);
             }
+            // TODO the error messages for this will not reflect the composed
+            // nature of the decoder; the notion of "One Of" will be lost.
+            return result;
         },
     };
 }
 
 export function OneOf3<T1, T2, T3>(d1: Decoder<T1>, d2: Decoder<T2>, d3: Decoder<T3>): Decoder<T1 | T2 | T3> {
     return {
-        decode(json: JSONValue): T1 | T2 | T3 {
-            try {
-                return d1.decode(json);
-            } catch (_) {
+        decode(json: JSONValue): DecodeResult<T1 | T2 | T3> {
+            const result: DecodeResult<T1> = d1.decode(json);
+            if (isDecodeError(result)) {
                 return OneOf2(d2, d3).decode(json);
+            } else {
+                return result;
             }
         },
     };

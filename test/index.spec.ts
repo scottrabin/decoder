@@ -1,4 +1,8 @@
 import { expect } from 'chai';
+import {
+    Decoder,
+    DecodeResult,
+} from '../lib/interface';
 import * as decoder from '../lib/index';
 
 const TEST_CASES = [
@@ -27,15 +31,17 @@ const TEST_CASES = [
 describe('decoder.Boolean', () => {
     it('should correctly decode a boolean-valued JSON argument', () => {
         [true, false].forEach((bool: any) => {
-            const result: boolean = decoder.Boolean.decode(bool);
+            const result: DecodeResult<boolean> = decoder.Boolean.decode(bool);
 
-            expect(result).to.be.equal(bool as boolean);
+            expect(result).to.be.equal(bool);
         });
     });
 
     TEST_CASES.filter(testCase => testCase.type !== 'boolean').forEach(testCase => {
-        it(`should error when given a ${testCase.type}`, () => {
-            expect(() => decoder.Boolean.decode(testCase.value)).to.throw(Error);
+        it(`should return an error when given a ${testCase.type}`, () => {
+            const result: DecodeResult<boolean> = decoder.Boolean.decode(testCase.value);
+
+            expect(result).to.be.an.instanceOf(Error);
         });
     });
 });
@@ -43,15 +49,17 @@ describe('decoder.Boolean', () => {
 describe('decoder.Number', () => {
     it('should correctly decode a number-valued JSON argument', () => {
         [1, 30, 19837].forEach((num: any) => {
-            const result: number = decoder.Number.decode(num);
+            const result: DecodeResult<number> = decoder.Number.decode(num);
 
             expect(result).to.be.equal(num as number);
         });
     });
 
     TEST_CASES.filter(testCase => testCase.type !== 'number').forEach(testCase => {
-        it(`should error when given a ${testCase.type}`, () => {
-            expect(() => decoder.Number.decode(testCase.value)).to.throw(Error);
+        it(`should return an error when given a ${testCase.type}`, () => {
+            const result: DecodeResult<number> = decoder.Number.decode(testCase.value);
+
+            expect(result).to.be.an.instanceOf(Error);
         });
     });
 });
@@ -59,15 +67,16 @@ describe('decoder.Number', () => {
 describe('decoder.String', () => {
     it('should correctly decode a string-valued JSON argument', () => {
         const json: any = 'a valid string';
-
-        const result: string = decoder.String.decode(json);
+        const result: DecodeResult<string> = decoder.String.decode(json);
 
         expect(result).to.be.equal('a valid string');
     });
 
     TEST_CASES.filter(testCase => testCase.type !== 'string').forEach(testCase => {
-        it(`should error when given a ${testCase.type}`, () => {
-            expect(() => decoder.String.decode(testCase.value)).to.throw(Error);
+        it(`should return an error when given a ${testCase.type}`, () => {
+            const result: DecodeResult<string> = decoder.String.decode(testCase.value);
+
+            expect(result).to.be.an.instanceOf(Error);
         });
     });
 });
@@ -75,21 +84,24 @@ describe('decoder.String', () => {
 describe('decoder.Array', () => {
     it('should correctly decode a array-valued JSON argument', () => {
         const json: any = ['one', 'two', 'three'];
-
-        const result: Array<string> = decoder.Array(decoder.String).decode(json);
+        const result: DecodeResult<Array<string>> = decoder.Array(decoder.String).decode(json);
 
         expect(result).to.be.deep.equal(['one', 'two', 'three']);
     });
 
-    it('should throw an error if an element is not decodeable with the given decoder', () => {
+    it('should return an error if an element is not decodeable with the given decoder', () => {
         const json: any = [1, 'two', 3];
+        const arrayDecoder: Decoder<Array<number>> = decoder.Array(decoder.Number);
+        const result: DecodeResult<Array<number>> = arrayDecoder.decode(json);
 
-        expect(() => decoder.Array(decoder.Number).decode(json)).to.throw(Error);
+        expect(result).to.be.an.instanceOf(Error);
     });
 
     TEST_CASES.filter(testCase => testCase.type !== 'array').forEach(testCase => {
-        it(`should error when given a ${testCase.type}`, () => {
-            expect(() => decoder.Array(decoder.String).decode(testCase.value)).to.throw(Error);
+        it(`should return an error when given a ${testCase.type}`, () => {
+            const result: DecodeResult<Array<string>> = decoder.Array(decoder.String).decode(testCase.value);
+
+            expect(result).to.be.an.instanceOf(Error);
         });
     });
 });
@@ -100,30 +112,32 @@ describe('decoder.Object', () => {
             some: 'value',
             has: 123,
         };
-
-        const result = decoder.Object({
+        const objDecoder: Decoder<{ some: string, has: number }> = decoder.Object({
             some: decoder.String,
             has: decoder.Number,
-        }).decode(json);
+        });
+        const result: DecodeResult<{ some: string, has: number }> = objDecoder.decode(json);
 
         expect(result).to.deep.equal(json);
     });
 
-    it('should throw an error if a value can\'t be correctly decoded', () => {
+    it('should return an error if a value can\'t be correctly decoded', () => {
         const json: any = {
             wrong: 'type',
         };
-
-        const objDecoder = decoder.Object({
+        const objDecoder: Decoder<{ wrong: number }> = decoder.Object({
             wrong: decoder.Number,
         });
+        const result: DecodeResult<{ wrong: number }> = objDecoder.decode(json);
 
-        expect(() => objDecoder.decode(json)).to.throw(Error);
+        expect(result).to.be.an.instanceOf(Error);
     });
 
     TEST_CASES.filter(testCase => testCase.type !== 'object').forEach(testCase => {
-        it(`should error when given a ${testCase.type}`, () => {
-            expect(() => decoder.Object({}).decode(testCase.value)).to.throw(Error);
+        it(`should return an error when given a ${testCase.type}`, () => {
+            const result: DecodeResult<{}> = decoder.Object({}).decode(testCase.value);
+
+            expect(result).to.be.an.instanceOf(Error);
         });
     });
 });
@@ -131,16 +145,17 @@ describe('decoder.Object', () => {
 describe('decoder.Map', () => {
     it('should apply the given function to the decoded result of the provided value', () => {
         const json: any = 8;
-        const mapDecoder = decoder.Map(n => n.toString(), decoder.Number);
+        const mapDecoder: Decoder<string> = decoder.Map(n => n.toString(), decoder.Number);
 
         expect(mapDecoder.decode(json)).to.equal('8');
     });
 
     it('should not suppress errors from the contained decoder', () => {
         const json: any = 12345;
-        const mapDecoder = decoder.Map(v => parseInt(v, 10), decoder.String);
+        const mapDecoder: Decoder<number> = decoder.Map(v => parseInt(v, 10), decoder.String);
+        const result: DecodeResult<number> = mapDecoder.decode(json);
 
-        expect(() => mapDecoder.decode(json)).to.throw(Error);
+        expect(result).to.be.an.instanceOf(Error);
     });
 });
 
@@ -151,71 +166,84 @@ describe('decoder.Dictionary', () => {
             "two": 2,
             "four": 4,
         };
-
-        const result = decoder.Dictionary(decoder.Number).decode(json);
+        const dictDecoder: Decoder<{ [key: string]: number }> = decoder.Dictionary(decoder.Number);
+        const result: DecodeResult<{ [key: string]: number }> = dictDecoder.decode(json);
 
         expect(result).to.deep.equal(json);
     });
 
-    it('should throw an error if a value can\'t be correctly decoded', () => {
+    it('should return an error if a value can\'t be correctly decoded', () => {
         const json: any = {
             "one": 1,
             "two": "two",
         };
+        const dictDecoder: Decoder<{ [key: string]: number }> = decoder.Dictionary(decoder.Number);
+        const result: DecodeResult<{ [key: string]: number }> = dictDecoder.decode(json);
 
-        const dictDecoder = decoder.Dictionary(decoder.Number);
-
-        expect(() => dictDecoder.decode(json)).to.throw(Error);
+        expect(result).to.be.an.instanceOf(Error);
     });
 
     TEST_CASES.filter(testCase => testCase.type !== 'object').forEach(testCase => {
         it(`should error when given a ${testCase.type}`, () => {
-            expect(() => decoder.Object({}).decode(testCase.value)).to.throw(Error);
+            const badDecoder: Decoder<{}> = decoder.Object({});
+            const result: DecodeResult<{}> = badDecoder.decode(testCase.value);
+
+            expect(result).to.be.an.instanceOf(Error);
         });
     });
 });
 
 describe('decoder.Maybe', () => {
     it('should return `null` when given `null` or an undefined value', () => {
-        expect(decoder.Maybe(decoder.String).decode(null)).to.equal(null);
-        expect(decoder.Maybe(decoder.Number).decode(void 0)).to.equal(null);
+        const maybeDecoder: Decoder<null | string> = decoder.Maybe(decoder.String);
+
+        expect(maybeDecoder.decode(null)).to.equal(null);
+        expect(maybeDecoder.decode(void 0)).to.equal(null);
+        expect(maybeDecoder.decode(undefined)).to.equal(null);
     });
 
     it('should return the decoded value if present', () => {
         const json: any = 3;
+        const maybeDecoder: Decoder<null | number> = decoder.Maybe(decoder.Number);
+        const result: DecodeResult<null | number> = maybeDecoder.decode(json);
 
-        expect(decoder.Maybe(decoder.Number).decode(json)).to.equal(json);
+        expect(result).to.equal(json);
     });
 
     it('should not suppress decode errors for contained values', () => {
         const json: any = 'not a number';
+        const maybeNumberDecoder: Decoder<null | number> = decoder.Maybe(decoder.Number);
+        const result: DecodeResult<null | number> = maybeNumberDecoder.decode(json);
 
-        const maybeNumberDecoder = decoder.Maybe(decoder.Number);
-
-        expect(() => maybeNumberDecoder.decode(json)).to.throw(Error);
+        expect(result).to.be.an.instanceOf(Error);
     });
 });
 
 describe('decoder.Default', () => {
     it('should return the provided default value if the given value is `null`', () => {
         const json: any = null;
-        const defaultDecoder = decoder.Default(decoder.Number, 234);
+        const defaultValue: number = 29384;
+        const defaultDecoder: Decoder<number> = decoder.Default(decoder.Number, defaultValue);
+        const result: DecodeResult<number> = defaultDecoder.decode(json);
 
-        expect(defaultDecoder.decode(json)).to.equal(234);
+        expect(result).to.equal(defaultValue);
     });
 
     it('should return the provided default value if the given value is `undefined`', () => {
         const json: any = void 0;
-        const defaultDecoder = decoder.Default(decoder.Boolean, true);
+        const defaultDecoder: Decoder<boolean> = decoder.Default(decoder.Boolean, true);
+        const result: DecodeResult<boolean> = defaultDecoder.decode(json);
 
-        expect(defaultDecoder.decode(json)).to.equal(true);
+        expect(result).to.equal(true);
     })
 
     it('should return the decoded value if the given argument is non-null', () => {
         const json: any = 'a string';
-        const defaultDecoder = decoder.Default(decoder.String, 'default value');
+        const defaultValue: string = 'default value';
+        const defaultDecoder: Decoder<string> = decoder.Default(decoder.String, defaultValue);
+        const result: DecodeResult<string> = defaultDecoder.decode(json);
 
-        expect(defaultDecoder.decode(json)).to.equal('a string');
+        expect(result).to.equal(json);
     });
 });
 
@@ -227,37 +255,42 @@ describe('decoder.At', () => {
     };
 
     it('should return the decoded value at the nested path', () => {
-        const atDecoder = decoder.At(['levelOne', 'levelTwo'], decoder.Number);
+        const atDecoder: Decoder<number> = decoder.At(['levelOne', 'levelTwo'], decoder.Number);
+        const result: DecodeResult<number> = atDecoder.decode(json);
 
-        expect(atDecoder.decode(json)).to.equal(json.levelOne.levelTwo);
+        expect(result).to.equal(json.levelOne.levelTwo);
     });
 
-    it('should throw an error if the path does not exist', () => {
-        const atDecoder = decoder.At(['levelOne', 'levelThree'], decoder.Number);
+    it('should return an error if the path does not exist', () => {
+        const atDecoder: Decoder<number> = decoder.At(['levelOne', 'levelThree'], decoder.Number);
+        const result: DecodeResult<number> = atDecoder.decode(json);
 
-        expect(() => atDecoder.decode(json)).to.throw(Error);
+        expect(result).to.be.an.instanceOf(Error);
     });
 
     it('should not suppress decode errors for contained values', () => {
-        const atDecoder = decoder.At(['levelOne', 'levelTwo'], decoder.String);
+        const atDecoder: Decoder<string> = decoder.At(['levelOne', 'levelTwo'], decoder.String);
+        const result: DecodeResult<string> = atDecoder.decode(json);
 
-        expect(() => atDecoder.decode(json)).to.throw(Error);
+        expect(result).to.be.an.instanceOf(Error);
     });
 });
 
 describe('decoder.OneOf', () => {
     it('should return the first type if it matches', () => {
         const json: any = 1;
-        const oneOfDecoder = decoder.OneOf2(decoder.Number, decoder.String);
+        const oneOfDecoder: Decoder<number | string> = decoder.OneOf2(decoder.Number, decoder.String);
+        const result: DecodeResult<number | string> = oneOfDecoder.decode(json);
 
-        expect(oneOfDecoder.decode(json)).to.equal(json);
+        expect(result).to.equal(json);
     });
 
     it('should return the second type if it matches', () => {
         const json: any = 'one';
-        const oneOfDecoder = decoder.OneOf2(decoder.Number, decoder.String);
+        const oneOfDecoder: Decoder<number | string> = decoder.OneOf2(decoder.Number, decoder.String);
+        const result: DecodeResult<number | string> = oneOfDecoder.decode(json);
 
-        expect(oneOfDecoder.decode(json)).to.equal(json);
+        expect(result).to.equal(json);
     });
 
     it('should return the first type that matches', () => {
@@ -265,8 +298,7 @@ describe('decoder.OneOf', () => {
             one: 1,
             two: 2,
         };
-
-        const multiDecoder = decoder.OneOf2(
+        const multiDecoder: Decoder<{ one: number } | { two: number }> = decoder.OneOf2(
             decoder.Object({
                 one: decoder.Number,
             }),
@@ -274,20 +306,23 @@ describe('decoder.OneOf', () => {
                 two: decoder.Number,
             })
         );
+        const result: DecodeResult<{ one: number } | { two: number }> = multiDecoder.decode(json);
 
-        expect(multiDecoder.decode(json)).to.deep.equal({ one: 1 });
+        expect(result).to.deep.equal({ one: 1 });
     });
 
-    it('should throw an error if none of the decoders apply', () => {
+    it('should return an error if none of the decoders apply', () => {
         const json: any = true;
-        const oneOfDecoder = decoder.OneOf2(decoder.Number, decoder.String);
+        const oneOfDecoder: Decoder<number | string> = decoder.OneOf2(decoder.Number, decoder.String);
+        const result: DecodeResult<number | string> = oneOfDecoder.decode(json);
 
-        expect(() => oneOfDecoder.decode(json)).to.throw(Error);
+        expect(result).to.be.an.instanceOf(Error);
     });
 
     it('should be able to match against multiple decoders', () => {
         const json: any = true;
-        const oneOfDecoder = decoder.OneOf3(decoder.Number, decoder.String, decoder.Boolean);
+        const oneOfDecoder: Decoder<number | string | boolean> = decoder.OneOf3(decoder.Number, decoder.String, decoder.Boolean);
+        const result: DecodeResult<number | string | boolean> = oneOfDecoder.decode(json);
 
         expect(oneOfDecoder.decode(json)).to.equal(json);
     });
