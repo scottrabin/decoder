@@ -1,4 +1,4 @@
-import { JSONValue } from './json';
+import { JSONValue } from "./json";
 
 const DECODE_ERROR_TAG: string = "Decode error";
 

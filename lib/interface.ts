@@ -1,4 +1,4 @@
-import { DecodeError } from './decode-error';
+import { DecodeError } from "./decode-error";
 
 export type DecodeResult<T> = T | DecodeError;
 
