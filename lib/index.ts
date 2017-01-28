@@ -16,6 +16,7 @@ import {
 } from "./decode-error";
 
 export { Boolean } from "./boolean";
+export { Number } from "./number";
 
 /**
  * Determines if the given parameter is a JSONObject
@@ -23,21 +24,6 @@ export { Boolean } from "./boolean";
 function isObject(param: any): param is JSONObject {
     return (param !== null && typeof param === "object" && !isArray(param));
 }
-
-
-/**
- * Decodes a number JSONValue into a number.
- */
-// tslint:disable-next-line:variable-name
-export const Number: Decoder<number> = {
-    decode(json: JSONValue): DecodeResult<number> {
-        if (typeof json !== "number") {
-            return new DecodeError("number", json);
-        }
-
-        return json;
-    },
-};
 
 /**
  * Decodes a string JSONValue into a string.

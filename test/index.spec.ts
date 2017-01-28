@@ -28,24 +28,6 @@ const TEST_CASES = [
     },
 ];
 
-describe('decoder.Number', () => {
-    it('should correctly decode a number-valued JSON argument', () => {
-        [1, 30, 19837].forEach((num: any) => {
-            const result: DecodeResult<number> = decoder.Number.decode(num);
-
-            expect(result).to.be.equal(num as number);
-        });
-    });
-
-    TEST_CASES.filter(testCase => testCase.type !== 'number').forEach(testCase => {
-        it(`should return an error when given a ${testCase.type}`, () => {
-            const result: DecodeResult<number> = decoder.Number.decode(testCase.value);
-
-            expect(result).to.be.an.instanceOf(Error);
-        });
-    });
-});
-
 describe('decoder.String', () => {
     it('should correctly decode a string-valued JSON argument', () => {
         const json: any = 'a valid string';
