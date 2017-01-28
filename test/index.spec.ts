@@ -28,42 +28,6 @@ const TEST_CASES = [
     },
 ];
 
-describe('decoder.Object', () => {
-    it('should correctly decode a shaped object', () => {
-        const json: any = {
-            some: 'value',
-            has: 123,
-        };
-        const objDecoder: Decoder<{ some: string, has: number }> = decoder.Object({
-            some: decoder.String,
-            has: decoder.Number,
-        });
-        const result: DecodeResult<{ some: string, has: number }> = objDecoder.decode(json);
-
-        expect(result).to.deep.equal(json);
-    });
-
-    it('should return an error if a value can\'t be correctly decoded', () => {
-        const json: any = {
-            wrong: 'type',
-        };
-        const objDecoder: Decoder<{ wrong: number }> = decoder.Object({
-            wrong: decoder.Number,
-        });
-        const result: DecodeResult<{ wrong: number }> = objDecoder.decode(json);
-
-        expect(result).to.be.an.instanceOf(Error);
-    });
-
-    TEST_CASES.filter(testCase => testCase.type !== 'object').forEach(testCase => {
-        it(`should return an error when given a ${testCase.type}`, () => {
-            const result: DecodeResult<{}> = decoder.Object({}).decode(testCase.value);
-
-            expect(result).to.be.an.instanceOf(Error);
-        });
-    });
-});
-
 describe('decoder.Map', () => {
     it('should apply the given function to the decoded result of the provided value', () => {
         const json: any = 8;
@@ -78,40 +42,6 @@ describe('decoder.Map', () => {
         const result: DecodeResult<number> = mapDecoder.decode(json);
 
         expect(result).to.be.an.instanceOf(Error);
-    });
-});
-
-describe('decoder.Dictionary', () => {
-    it('should correctly decode a dictionary', () => {
-        const json: any = {
-            "one": 1,
-            "two": 2,
-            "four": 4,
-        };
-        const dictDecoder: Decoder<{ [key: string]: number }> = decoder.Dictionary(decoder.Number);
-        const result: DecodeResult<{ [key: string]: number }> = dictDecoder.decode(json);
-
-        expect(result).to.deep.equal(json);
-    });
-
-    it('should return an error if a value can\'t be correctly decoded', () => {
-        const json: any = {
-            "one": 1,
-            "two": "two",
-        };
-        const dictDecoder: Decoder<{ [key: string]: number }> = decoder.Dictionary(decoder.Number);
-        const result: DecodeResult<{ [key: string]: number }> = dictDecoder.decode(json);
-
-        expect(result).to.be.an.instanceOf(Error);
-    });
-
-    TEST_CASES.filter(testCase => testCase.type !== 'object').forEach(testCase => {
-        it(`should error when given a ${testCase.type}`, () => {
-            const badDecoder: Decoder<{}> = decoder.Object({});
-            const result: DecodeResult<{}> = badDecoder.decode(testCase.value);
-
-            expect(result).to.be.an.instanceOf(Error);
-        });
     });
 });
 
@@ -166,35 +96,6 @@ describe('decoder.Default', () => {
         const result: DecodeResult<string> = defaultDecoder.decode(json);
 
         expect(result).to.equal(json);
-    });
-});
-
-describe('decoder.At', () => {
-    const json: any = {
-        levelOne: {
-            levelTwo: 3,
-        },
-    };
-
-    it('should return the decoded value at the nested path', () => {
-        const atDecoder: Decoder<number> = decoder.At(['levelOne', 'levelTwo'], decoder.Number);
-        const result: DecodeResult<number> = atDecoder.decode(json);
-
-        expect(result).to.equal(json.levelOne.levelTwo);
-    });
-
-    it('should return an error if the path does not exist', () => {
-        const atDecoder: Decoder<number> = decoder.At(['levelOne', 'levelThree'], decoder.Number);
-        const result: DecodeResult<number> = atDecoder.decode(json);
-
-        expect(result).to.be.an.instanceOf(Error);
-    });
-
-    it('should not suppress decode errors for contained values', () => {
-        const atDecoder: Decoder<string> = decoder.At(['levelOne', 'levelTwo'], decoder.String);
-        const result: DecodeResult<string> = atDecoder.decode(json);
-
-        expect(result).to.be.an.instanceOf(Error);
     });
 });
 

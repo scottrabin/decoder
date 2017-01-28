@@ -1,60 +1,19 @@
-import {
-    isArray,
-    objectKeys,
-} from "./unshadow";
-import {
-    JSONValue,
-    JSONObject,
-} from "./json";
+import { JSONValue } from "./json";
 import {
     Decoder,
     DecodeResult,
 } from "./interface";
-import {
-    DecodeError,
-    isDecodeError,
-} from "./decode-error";
+import { isDecodeError } from "./decode-error";
 
 export { Boolean } from "./boolean";
 export { Number } from "./number";
 export { String } from "./string";
 export { Array } from "./array";
-
-/**
- * Determines if the given parameter is a JSONObject
- */
-function isObject(param: any): param is JSONObject {
-    return (param !== null && typeof param === "object" && !isArray(param));
-}
-
-/**
- * Decodes an arbitrary object, using the decoder map to determine the value at
- * each key.
- */
-export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decoder<T> {
-    return {
-        decode(json: JSONValue): DecodeResult<T> {
-            if (!isObject(json)) {
-                return new DecodeError("object", json);
-            }
-
-            // TODO empty object is not assignable to Partial<T>
-            // https://github.com/Microsoft/TypeScript/issues/12731
-            const result: Partial<T> = {} as Partial<T>;
-            const keys: (keyof T)[] = objectKeys(decoderMap) as (keyof T)[];
-            for (let key of keys) {
-                const vResult = decoderMap[key].decode(json[key]);
-                if (isDecodeError(vResult)) {
-                    return vResult;
-                } else {
-                    result[key] = vResult;
-                }
-            }
-
-            return result as T;
-        },
-    };
-}
+export {
+    At,
+    Dictionary,
+    Object,
+} from "./object";
 
 /**
  * Maps an arbitrarily-valued, verified type into a different type as a part
@@ -69,30 +28,6 @@ export function Map<T, TRaw>(mapper: (raw: TRaw) => T, decoder: Decoder<TRaw>): 
             } else {
                 return mapper(innerResult);
             }
-        },
-    };
-}
-
-/**
- * Decodes a dictionary with arbitrary key mappings to consistent values.
- */
-export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }> {
-    return {
-        decode(json: JSONValue): DecodeResult<{ [key: string]: T }> {
-            if (!isObject(json)) {
-                return new DecodeError("object", json);
-            }
-
-            const dict: { [key: string]: T } = {};
-            for (let key of objectKeys(json)) {
-                const vResult = decoder.decode(json[key]);
-                if (isDecodeError(vResult)) {
-                    return vResult;
-                } else {
-                    dict[key] = vResult;
-                }
-            }
-            return dict;
         },
     };
 }
@@ -129,26 +64,6 @@ export function Default<T>(decoder: Decoder<T>, defaultValue: T): Decoder<T> {
             default:
                 return decoder.decode(json);
             }
-        },
-    };
-}
-
-/**
- * Decode a value nested inside multiple levels of objects.
- */
-export function At<T>(path: string[], decoder: Decoder<T>): Decoder<T> {
-    return {
-        decode(json: JSONValue): DecodeResult<T> {
-            let traverseResult: JSONValue = json;
-            for (let pathKey of path) {
-                if (isObject(traverseResult) && (pathKey in traverseResult)) {
-                    traverseResult = traverseResult[pathKey];
-                } else {
-                    return new DecodeError(`value at ${path.join(".")}`, json);
-                }
-            }
-
-            return decoder.decode(traverseResult);
         },
     };
 }

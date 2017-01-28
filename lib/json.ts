@@ -8,3 +8,10 @@ export interface JSONObject {
 }
 
 export interface JSONArray extends Array<JSONValue> { }
+
+/**
+ * Determines if the given parameter is a JSONObject
+ */
+export function isObject(param: any): param is JSONObject {
+    return (param !== null && typeof param === "object" && !Array.isArray(param));
+}
