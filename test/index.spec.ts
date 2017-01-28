@@ -28,23 +28,6 @@ const TEST_CASES = [
     },
 ];
 
-describe('decoder.String', () => {
-    it('should correctly decode a string-valued JSON argument', () => {
-        const json: any = 'a valid string';
-        const result: DecodeResult<string> = decoder.String.decode(json);
-
-        expect(result).to.be.equal('a valid string');
-    });
-
-    TEST_CASES.filter(testCase => testCase.type !== 'string').forEach(testCase => {
-        it(`should return an error when given a ${testCase.type}`, () => {
-            const result: DecodeResult<string> = decoder.String.decode(testCase.value);
-
-            expect(result).to.be.an.instanceOf(Error);
-        });
-    });
-});
-
 describe('decoder.Array', () => {
     it('should correctly decode a array-valued JSON argument', () => {
         const json: any = ['one', 'two', 'three'];
