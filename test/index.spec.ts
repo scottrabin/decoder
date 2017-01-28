@@ -28,24 +28,6 @@ const TEST_CASES = [
     },
 ];
 
-describe('decoder.Boolean', () => {
-    it('should correctly decode a boolean-valued JSON argument', () => {
-        [true, false].forEach((bool: any) => {
-            const result: DecodeResult<boolean> = decoder.Boolean.decode(bool);
-
-            expect(result).to.be.equal(bool);
-        });
-    });
-
-    TEST_CASES.filter(testCase => testCase.type !== 'boolean').forEach(testCase => {
-        it(`should return an error when given a ${testCase.type}`, () => {
-            const result: DecodeResult<boolean> = decoder.Boolean.decode(testCase.value);
-
-            expect(result).to.be.an.instanceOf(Error);
-        });
-    });
-});
-
 describe('decoder.Number', () => {
     it('should correctly decode a number-valued JSON argument', () => {
         [1, 30, 19837].forEach((num: any) => {
