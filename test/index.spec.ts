@@ -28,31 +28,6 @@ const TEST_CASES = [
     },
 ];
 
-describe('decoder.Array', () => {
-    it('should correctly decode a array-valued JSON argument', () => {
-        const json: any = ['one', 'two', 'three'];
-        const result: DecodeResult<Array<string>> = decoder.Array(decoder.String).decode(json);
-
-        expect(result).to.be.deep.equal(['one', 'two', 'three']);
-    });
-
-    it('should return an error if an element is not decodeable with the given decoder', () => {
-        const json: any = [1, 'two', 3];
-        const arrayDecoder: Decoder<Array<number>> = decoder.Array(decoder.Number);
-        const result: DecodeResult<Array<number>> = arrayDecoder.decode(json);
-
-        expect(result).to.be.an.instanceOf(Error);
-    });
-
-    TEST_CASES.filter(testCase => testCase.type !== 'array').forEach(testCase => {
-        it(`should return an error when given a ${testCase.type}`, () => {
-            const result: DecodeResult<Array<string>> = decoder.Array(decoder.String).decode(testCase.value);
-
-            expect(result).to.be.an.instanceOf(Error);
-        });
-    });
-});
-
 describe('decoder.Object', () => {
     it('should correctly decode a shaped object', () => {
         const json: any = {

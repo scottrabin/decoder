@@ -18,37 +18,13 @@ import {
 export { Boolean } from "./boolean";
 export { Number } from "./number";
 export { String } from "./string";
+export { Array } from "./array";
 
 /**
  * Determines if the given parameter is a JSONObject
  */
 function isObject(param: any): param is JSONObject {
     return (param !== null && typeof param === "object" && !isArray(param));
-}
-
-/**
- * Decodes an array JSONValue into an array of decoded types.
- */
-export function Array<T>(elementDecoder: Decoder<T>): Decoder<Array<T>> {
-    return {
-        decode(json: JSONValue): DecodeResult<Array<T>> {
-            if (!isArray(json)) {
-                return new DecodeError("array", json);
-            }
-
-            const resultList: Array<T> = [];
-            for (let i = 0; i < json.length; i++) {
-                const result: DecodeResult<T> = elementDecoder.decode(json[i]);
-                if (isDecodeError(result)) {
-                    return result;
-                } else {
-                    resultList[i] = result;
-                }
-            }
-
-            return resultList;
-        },
-    };
 }
 
 /**
