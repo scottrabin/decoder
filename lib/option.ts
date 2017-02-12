@@ -9,17 +9,7 @@ import { JSONValue } from "./json";
  * the value.
  */
 export function Maybe<T>(decoder: Decoder<T>): Decoder<null | T> {
-    return {
-        decode(json: JSONValue): DecodeResult<null | T> {
-            switch (json) {
-            case null:
-            case void 0:
-                return null;
-            default:
-                return decoder.decode(json);
-            }
-        },
-    };
+    return Default(decoder, null);
 }
 
 /**
