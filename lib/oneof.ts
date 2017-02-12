@@ -1,9 +1,9 @@
-import { JSONValue } from "./json";
+import { isDecodeError } from "./decode-error";
 import {
     Decoder,
     DecodeResult,
 } from "./interface";
-import { isDecodeError } from "./decode-error";
+import { JSONValue } from "./json";
 
 /**
  * Decode a value that may match any one of the given decoders.

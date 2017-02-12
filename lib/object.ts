@@ -1,4 +1,3 @@
-import { objectKeys } from "./unshadow";
 import {
     DecodeError,
     isDecodeError,
@@ -12,6 +11,7 @@ import {
     JSONObject,
     isObject,
 } from "./json";
+import { objectKeys } from "./unshadow";
 
 /**
  * Decode a value nested inside multiple levels of objects.

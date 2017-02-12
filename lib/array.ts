@@ -1,4 +1,3 @@
-import { isArray } from "./unshadow";
 import {
     DecodeError,
     isDecodeError,
@@ -8,6 +7,7 @@ import {
     DecodeResult,
 } from "./interface";
 import { JSONValue } from "./json";
+import { isArray } from "./unshadow";
 
 /**
  * Decodes an array JSONValue into an array of decoded types.
