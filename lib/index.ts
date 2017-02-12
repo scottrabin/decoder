@@ -1,7 +1,6 @@
+export { Array } from "./array";
 export { Boolean } from "./boolean";
 export { Number } from "./number";
-export { String } from "./string";
-export { Array } from "./array";
 export {
     At,
     Dictionary,
@@ -15,4 +14,5 @@ export {
     Default,
     Maybe,
 } from "./option";
+export { String } from "./string";
 export { Transform } from "./transform";
