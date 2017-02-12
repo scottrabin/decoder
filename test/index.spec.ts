@@ -45,60 +45,6 @@ describe('decoder.Map', () => {
     });
 });
 
-describe('decoder.Maybe', () => {
-    it('should return `null` when given `null` or an undefined value', () => {
-        const maybeDecoder: Decoder<null | string> = decoder.Maybe(decoder.String);
-
-        expect(maybeDecoder.decode(null)).to.equal(null);
-        expect(maybeDecoder.decode(void 0)).to.equal(null);
-        expect(maybeDecoder.decode(undefined)).to.equal(null);
-    });
-
-    it('should return the decoded value if present', () => {
-        const json: any = 3;
-        const maybeDecoder: Decoder<null | number> = decoder.Maybe(decoder.Number);
-        const result: DecodeResult<null | number> = maybeDecoder.decode(json);
-
-        expect(result).to.equal(json);
-    });
-
-    it('should not suppress decode errors for contained values', () => {
-        const json: any = 'not a number';
-        const maybeNumberDecoder: Decoder<null | number> = decoder.Maybe(decoder.Number);
-        const result: DecodeResult<null | number> = maybeNumberDecoder.decode(json);
-
-        expect(result).to.be.an.instanceOf(Error);
-    });
-});
-
-describe('decoder.Default', () => {
-    it('should return the provided default value if the given value is `null`', () => {
-        const json: any = null;
-        const defaultValue: number = 29384;
-        const defaultDecoder: Decoder<number> = decoder.Default(decoder.Number, defaultValue);
-        const result: DecodeResult<number> = defaultDecoder.decode(json);
-
-        expect(result).to.equal(defaultValue);
-    });
-
-    it('should return the provided default value if the given value is `undefined`', () => {
-        const json: any = void 0;
-        const defaultDecoder: Decoder<boolean> = decoder.Default(decoder.Boolean, true);
-        const result: DecodeResult<boolean> = defaultDecoder.decode(json);
-
-        expect(result).to.equal(true);
-    })
-
-    it('should return the decoded value if the given argument is non-null', () => {
-        const json: any = 'a string';
-        const defaultValue: string = 'default value';
-        const defaultDecoder: Decoder<string> = decoder.Default(decoder.String, defaultValue);
-        const result: DecodeResult<string> = defaultDecoder.decode(json);
-
-        expect(result).to.equal(json);
-    });
-});
-
 describe('decoder.OneOf', () => {
     it('should return the first type if it matches', () => {
         const json: any = 1;

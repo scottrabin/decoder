@@ -14,6 +14,10 @@ export {
     Dictionary,
     Object,
 } from "./object";
+export {
+    Default,
+    Maybe,
+} from "./option";
 
 /**
  * Maps an arbitrarily-valued, verified type into a different type as a part
@@ -27,42 +31,6 @@ export function Map<T, TRaw>(mapper: (raw: TRaw) => T, decoder: Decoder<TRaw>): 
                 return innerResult;
             } else {
                 return mapper(innerResult);
-            }
-        },
-    };
-}
-
-/**
- * Decodes a value that may be missing or null; otherwise, attempts to decode
- * the value.
- */
-export function Maybe<T>(decoder: Decoder<T>): Decoder<null | T> {
-    return {
-        decode(json: JSONValue): DecodeResult<null | T> {
-            switch (json) {
-            case null:
-            case void 0:
-                return null;
-            default:
-                return decoder.decode(json);
-            }
-        },
-    };
-}
-
-/**
- * Attempts to decode the given JSON if it is non-null; otherwise, yields the
- * provided default value.
- */
-export function Default<T>(decoder: Decoder<T>, defaultValue: T): Decoder<T> {
-    return {
-        decode(json: JSONValue): DecodeResult<T> {
-            switch (json) {
-            case null:
-            case void 0:
-                return defaultValue;
-            default:
-                return decoder.decode(json);
             }
         },
     };
