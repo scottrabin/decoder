@@ -43,3 +43,7 @@ export function object<T>(count: number, generator: (index?: number) => T): Arra
         return result;
     });
 }
+
+export function date(count: number): Array<Date> {
+    return makeTestCases(count, () => Faker.date.recent());
+}

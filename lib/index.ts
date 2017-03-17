@@ -1,5 +1,6 @@
 export { Array } from "./array";
 export { Boolean } from "./boolean";
+export { Date } from "./date";
 export { Number } from "./number";
 export {
     At,
