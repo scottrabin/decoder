@@ -8,7 +8,7 @@ import { Number } from "../lib/number";
 import {
     At,
     Dictionary,
-    Object,
+    Struct,
 } from "../lib/object";
 import { String } from "../lib/string";
 import * as generator from "./helper/generator";
@@ -100,13 +100,13 @@ describe("decoder.Dictionary", () => {
     });
 });
 
-describe("decoder.Object", () => {
+describe("decoder.Struct", () => {
     it("should correctly decode a shaped object", () => {
         const json: any = {
             some: "value",
             has: 123,
         };
-        const objDecoder: Decoder<{ some: string, has: number }> = Object({
+        const objDecoder: Decoder<{ some: string, has: number }> = Struct({
             some: String,
             has: Number,
         });
@@ -119,7 +119,7 @@ describe("decoder.Object", () => {
         const json: any = {
             wrong: 'type',
         };
-        const objDecoder: Decoder<{ wrong: number }> = Object({
+        const objDecoder: Decoder<{ wrong: number }> = Struct({
             wrong: Number,
         });
         const result: DecodeResult<{ wrong: number }> = objDecoder.decode(json);
@@ -147,7 +147,7 @@ describe("decoder.Object", () => {
     ].forEach(({ type, values }) => {
         it(`should return an error when given a ${type}`, () => {
             for (let testValue of values) {
-                const result: DecodeResult<Object> = Object({}).decode(testValue);
+                const result: DecodeResult<Object> = Struct({}).decode(testValue);
 
                 expect(result).to.be.an.instanceOf(Error);
             }

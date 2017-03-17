@@ -2,7 +2,7 @@ import * as Faker from 'faker';
 
 function makeTestCases<T>(
     count: number,
-    generator: (index?: number) => T
+    generator: (index: number) => T
 ): Array<T> {
     const result: Array<T> = new Array(count);
     for (let i = 0; i < count; i++) {

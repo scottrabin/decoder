@@ -11,7 +11,6 @@ import {
     JSONObject,
     isObject,
 } from "./json";
-import { objectKeys } from "./unshadow";
 
 /**
  * Decode a value nested inside multiple levels of objects.
@@ -44,7 +43,7 @@ export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }
             }
 
             const dict: { [key: string]: T } = {};
-            for (let key of objectKeys(json)) {
+            for (let key of Object.keys(json)) {
                 const vResult = decoder.decode(json[key]);
                 if (isDecodeError(vResult)) {
                     return vResult;
@@ -58,10 +57,10 @@ export function Dictionary<T>(decoder: Decoder<T>): Decoder<{ [key: string]: T }
 }
 
 /**
- * Decodes an arbitrary object, using the decoder map to determine the value at
+ * Decodes a structured object, using the decoder map to determine the value at
  * each key.
  */
-export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decoder<T> {
+export function Struct<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decoder<T> {
     return {
         decode(json: JSONValue): DecodeResult<T> {
             if (!isObject(json)) {
@@ -71,7 +70,7 @@ export function Object<T>(decoderMap: { [K in keyof T]: Decoder<T[K]> }): Decode
             // TODO empty object is not assignable to Partial<T>
             // https://github.com/Microsoft/TypeScript/issues/12731
             const result: Partial<T> = {} as Partial<T>;
-            const keys: (keyof T)[] = objectKeys(decoderMap) as (keyof T)[];
+            const keys: (keyof T)[] = Object.keys(decoderMap) as (keyof T)[];
             for (let key of keys) {
                 const vResult = decoderMap[key].decode(json[key]);
                 if (isDecodeError(vResult)) {

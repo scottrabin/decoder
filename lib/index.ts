@@ -4,7 +4,7 @@ export { Number } from "./number";
 export {
     At,
     Dictionary,
-    Object,
+    Struct,
 } from "./object";
 export {
     OneOf2,
