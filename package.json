@@ -27,13 +27,13 @@
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
-    "@types/faker": "^3.1.32",
+    "@types/faker": "^4.1.0",
     "@types/mocha": "^2.2.35",
     "chai": "^3.5.0",
-    "faker": "^3.1.0",
+    "faker": "^4.1.0",
     "mocha": "^3.2.0",
     "npm-watch": "^0.1.7",
-    "ts-node": "^1.7.3",
-    "tslint": "^4.2.0"
+    "ts-node": "^2.1.0",
+    "tslint": "^4.5.1"
   }
 }
