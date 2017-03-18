@@ -7,10 +7,7 @@ export {
     Dictionary,
     Struct,
 } from "./object";
-export {
-    OneOf2,
-    OneOf3,
-} from "./oneof";
+export { OneOf } from "./oneof";
 export {
     Default,
     Maybe,
