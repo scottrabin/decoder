@@ -1,0 +1,29 @@
+{
+	"env": {
+		"browser": true,
+		"es2021": true
+	},
+	"extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+	"parser": "@typescript-eslint/parser",
+	"parserOptions": {
+		"ecmaVersion": "latest",
+		"sourceType": "module"
+	},
+	"plugins": ["@typescript-eslint", "prettier"],
+	"rules": {
+		"indent": ["error", "tab", { "SwitchCase": 1 }],
+		"linebreak-style": ["error", "unix"],
+		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"],
+		"prettier/prettier": "error",
+		"quotes": ["error", "double", { "avoidEscape": true }],
+		"semi": ["error", "always"]
+	},
+	"overrides": [
+		{
+			"files": ["src/**/*.test.ts"],
+			"rules": {
+				"@typescript-eslint/no-explicit-any": "off"
+			}
+		}
+	]
+}
