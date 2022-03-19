@@ -1,6 +1,6 @@
 {
 	"name": "@scottrabin/decoder",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "Decode JSON into application types",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
